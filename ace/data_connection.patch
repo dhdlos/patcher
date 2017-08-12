@@ -1,0 +1,41 @@
+From e054aaf2a714e67260d9d133464e020f31fb8700 Mon Sep 17 00:00:00 2001
+From: Ilya Lebedev <cxldphvntxm@gmail.com>
+Date: Sat, 12 Aug 2017 20:20:23 +0600
+Subject: [PATCH] Patch for HTC Desire HD/ Desire S
+* Mobile data connection fix
+
+---
+ .../com/android/internal/telephony/dataconnection/DataConnection.java | 4 +++-
+ src/java/com/android/internal/telephony/uicc/UiccController.java      | 1 +
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/java/com/android/internal/telephony/dataconnection/DataConnection.java b/src/java/com/android/internal/telephony/dataconnection/DataConnection.java
+index edc58af..9f0a663 100644
+--- a/src/java/com/android/internal/telephony/dataconnection/DataConnection.java
++++ b/src/java/com/android/internal/telephony/dataconnection/DataConnection.java
+@@ -576,7 +576,9 @@ public class DataConnection extends StateMachine {
+         }
+ 
+         mPhone.mCi.setupDataCall(
+-                Integer.toString(cp.mRilRat + 2),
++                Integer.toString((mPhone.mCi.getRilVersion() > 4) ? cp.mRilRat + 2
++                        : ServiceState.isGsm(cp.mRilRat + 2) ? RILConstants.SETUP_DATA_TECH_GSM
++                        : RILConstants.SETUP_DATA_TECH_CDMA),
+                 Integer.toString(cp.mProfileId),
+                 mApnSetting.apn, mApnSetting.user, mApnSetting.password,
+                 Integer.toString(authType),
+diff --git a/src/java/com/android/internal/telephony/uicc/UiccController.java b/src/java/com/android/internal/telephony/uicc/UiccController.java
+index 153a1b0..bce1b0b 100644
+--- a/src/java/com/android/internal/telephony/uicc/UiccController.java
++++ b/src/java/com/android/internal/telephony/uicc/UiccController.java
+@@ -137,6 +137,7 @@ public class UiccController extends Handler {
+                 mCis[i].registerForOn(this, EVENT_ICC_STATUS_CHANGED, index);
+             }
+             mCis[i].registerForNotAvailable(this, EVENT_RADIO_UNAVAILABLE, index);
++            mCis[i].registerForOn(this, EVENT_ICC_STATUS_CHANGED, index);
+             mCis[i].registerForIccRefresh(this, EVENT_SIM_REFRESH, index);
+         }
+     }
+-- 
+2.14.0.windows.2
+
